@@ -82,7 +82,8 @@ install_tas_grafana() {
 
     # Create Grafana secret token
     oc apply -k grafana/resources
-    sleep 10
+    echo "wait for sigstore-monitoring to restart ..."
+    sleep 30
 
     # Setup environment variables
     export BEARER_TOKEN=$(oc -n sigstore-monitoring get secrets grafana-sa-token -o=jsonpath="{.data.token}" | base64 -d)
@@ -92,8 +93,11 @@ install_tas_grafana() {
 
     # Modify datasource and create dashboard
     envsubst < grafana/dashboards/datasource.yaml | oc apply -f -
+    echo "wait for resources to be created ..."
+    sleep 30
     oc apply -f grafana/dashboards/dashboard.yaml
-    sleep 5
+    echo "wait for dashboard to be created ..."
+    sleep 10
 
     # Get route to connect to the dashboard
     oc -n sigstore-monitoring get routes
